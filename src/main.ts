@@ -69,9 +69,15 @@ function configure(app: INestApplication): void {
 }
 
 function logAppPath(logger: LoggerService): void {
+  const env = process.env.NODE_ENV;
   const host = process.env.HOST || 'localhost';
   const grpcPort = process.env.GRPC_PORT || '8000';
-  logger.log(`Server gRPC ready at http://${host}:${grpcPort}`);
+
+  if (env !== 'local') {
+    logger.log(`Server gRPC ready at grpcs://${host}:${grpcPort}`);
+  } else {
+    logger.log(`Server gRPC ready at grpc://${host}:${grpcPort}`);
+  }
 }
 
 function logAppEnv(logger: LoggerService): void {
