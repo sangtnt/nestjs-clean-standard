@@ -34,12 +34,14 @@ export class SendEmailVerificationUseCase {
     }
 
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
-    await this.verificationCodeRepository.saveVerificationCode({
-      id: request.email,
-      code: `${verificationCode}`,
-      attempts: 5,
-      expirationInMinutes: VerificationCodeExpiresMinute,
-    });
+    await this.verificationCodeRepository.saveVerificationCode(
+      {
+        id: request.email,
+        code: `${verificationCode}`,
+        attempts: 5,
+      },
+      VerificationCodeExpiresMinute * 60 * 1000,
+    );
 
     await this.mailRepository.sendEmailVerificationCode({
       to: [request.email.trim().toLowerCase()],

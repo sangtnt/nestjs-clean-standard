@@ -1,21 +1,21 @@
 import { VerificationCodeEntity } from '@/core/entities/verification-code.entity';
 import { IVerificationCodeRepository } from '@/core/repositories/verification-code.repository';
 import { VerificationCodeExpiresMinute } from '@/shared/constants/config.constants';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Inject } from '@nestjs/common';
 
 export class VerificationCodeRepository implements IVerificationCodeRepository {
   constructor(@Inject(CACHE_MANAGER) private redisServiceClient: Cache) {}
 
-  async saveVerificationCode(entity: VerificationCodeEntity): Promise<void> {
-    const { id, code, expirationInMinutes, attempts } = entity;
-    const exp = expirationInMinutes * 60 * 1000;
+  async saveVerificationCode(entity: VerificationCodeEntity, ttl?: number): Promise<void> {
+    const { id, code, attempts } = entity;
     await this.redisServiceClient.mset([
-      { key: `verification_code:${id}`, value: code, ttl: exp },
+      { key: `verification_code:${id}`, value: code, ttl },
       {
         key: `verification_code:remaining_attempts:${id}`,
         value: attempts.toString(),
-        ttl: exp,
+        ttl: ttl,
       },
     ]);
   }
@@ -41,7 +41,6 @@ export class VerificationCodeRepository implements IVerificationCodeRepository {
     return {
       id: id,
       code: code,
-      expirationInMinutes: VerificationCodeExpiresMinute,
       attempts: parseInt(attempts, 10),
     };
   }
