@@ -1,7 +1,6 @@
 import appConfig from '@/configs/app.config';
 import authDatabaseConfig, { authDatabaseConfigOptions } from '@/configs/auth-database.config';
 import { AUTH_DATA_SOURCE, KAFKA_CLIENT_SERVICE } from '@/shared/constants/constants';
-import { EnvironmentVariables } from '@/shared/constants/env.constant';
 import {
   MAIL_REPOSITORY_TOKEN,
   REFRESH_TOKEN_REPOSITORY_TOKEN,
@@ -15,12 +14,13 @@ import { DataSource } from 'typeorm';
 import { UserSchema } from './postgres/auth-db/entities/user.entity';
 import { UserRepository } from './postgres/auth-db/repositories/user.repository';
 import { VerificationCodeRepository } from './redis/repositories/verification-code.repository';
-import { ClientProviderOptions, ClientsModule, Transport } from '@nestjs/microservices';
+import { ClientProvider, ClientsModule } from '@nestjs/microservices';
 import { MailRepository } from './kafka/repositories/mail.repository';
 import { RefreshTokenSchema } from './postgres/auth-db/entities/refresh-token.entity';
 import { RefreshTokenRepository } from './postgres/auth-db/repositories/refresh-token.repository';
 import redisConfig from '@/configs/redis.config';
 import { Logger } from '@/shared/logger/services/app-logger.service';
+import kafkaConfig from '@/configs/kafka.config';
 
 @Module({
   imports: [
@@ -40,33 +40,12 @@ import { Logger } from '@/shared/logger/services/app-logger.service';
       },
       inject: [Logger],
     }),
-    ClientsModule.registerAsync({
-      clients: [
-        {
-          useFactory: (configService: ConfigService): ClientProviderOptions => ({
-            name: KAFKA_CLIENT_SERVICE,
-            transport: Transport.KAFKA,
-            options: {
-              client: {
-                clientId:
-                  configService.get<string>(EnvironmentVariables.KAFKA_CLIENT_ID) ||
-                  'default-client-id',
-                brokers: configService
-                  .get<string>(EnvironmentVariables.KAFKA_BROKERS)
-                  ?.split(',') || ['localhost:9092'],
-              },
-              consumer: {
-                groupId:
-                  configService.get<string>(EnvironmentVariables.KAFKA_CONSUMER_GROUP_ID) ||
-                  'default-group',
-              },
-            },
-          }),
-          name: KAFKA_CLIENT_SERVICE,
-          inject: [ConfigService],
-        },
-      ],
-    }),
+    ClientsModule.registerAsync([
+      {
+        useFactory: (): ClientProvider => kafkaConfig,
+        name: KAFKA_CLIENT_SERVICE,
+      },
+    ]),
   ],
   providers: [
     {
