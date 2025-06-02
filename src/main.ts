@@ -1,18 +1,12 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  INestApplication,
-  Logger,
-  LoggerService,
-  ShutdownSignal,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication, LoggerService, ShutdownSignal, ValidationPipe } from '@nestjs/common';
 import {
   CatchEverythingFilter,
   CatchValidationFilter,
   DefaultRpcExceptionFilter,
 } from './shared/filters/rpc-exception.filter';
-import { Logger as AppLogger } from './shared/logger/services/app-logger.service';
+import { Logger as AppLogger, Logger } from './shared/logger/services/app-logger.service';
 import { GrpcRequestLoggingInterceptor } from './shared/logger/interceptors/grpc-request-logging.interceptor';
 import { ClsService } from 'nestjs-cls';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -20,15 +14,17 @@ import { grpcOptions } from './configs/grpc.config';
 import { TimeoutInterceptor } from './shared/interceptors/time-out.interceptor';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from './configs/app.config';
+import { appConfig } from './shared/constants/config.constants';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const logger = new Logger('Bootstrap');
+  const logger = app.get(AppLogger);
+  const configService = app.get(ConfigService);
 
   try {
-    logAppEnv(logger);
-    configure(app);
-    logAppPath(logger);
+    logAppEnv(logger, configService);
+    configure(app, logger, configService);
+    logAppPath(logger, configService);
     await startEvent(app);
   } catch (error) {
     const stack = error instanceof Error ? error.stack : '';
@@ -45,7 +41,7 @@ async function startEvent(app: INestApplication): Promise<void> {
   await app.startAllMicroservices();
 }
 
-function configure(app: INestApplication): void {
+function configure(app: INestApplication, logger: Logger, configService: ConfigService): void {
   const cls = app.get(ClsService);
   const reflector = app.get(Reflector);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -54,13 +50,10 @@ function configure(app: INestApplication): void {
     new DefaultRpcExceptionFilter(),
     new CatchValidationFilter(),
   );
-  app.useLogger(app.get(AppLogger));
+  app.useLogger(logger);
   app.useGlobalInterceptors(
     new GrpcRequestLoggingInterceptor(cls, reflector),
-    new TimeoutInterceptor(
-      reflector,
-      app.get(ConfigService).get<AppConfig>('appConfig')?.timeout || 30000,
-    ),
+    new TimeoutInterceptor(reflector, configService.get<AppConfig>(appConfig)?.timeout || 30000),
   );
 
   app.enableShutdownHooks(
@@ -68,10 +61,10 @@ function configure(app: INestApplication): void {
   );
 }
 
-function logAppPath(logger: LoggerService): void {
-  const env = process.env.NODE_ENV;
-  const host = process.env.HOST || 'localhost';
-  const grpcPort = process.env.GRPC_PORT || '8000';
+function logAppPath(logger: LoggerService, configService: ConfigService): void {
+  const env = configService.get<AppConfig>(appConfig)?.appEnvironment;
+  const host = configService.get<AppConfig>(appConfig)?.appHost || 'localhost';
+  const grpcPort = configService.get<AppConfig>(appConfig)?.grpcPort || '8000';
 
   if (env !== 'local') {
     logger.log(`Server gRPC ready at grpcs://${host}:${grpcPort}`);
@@ -80,8 +73,10 @@ function logAppPath(logger: LoggerService): void {
   }
 }
 
-function logAppEnv(logger: LoggerService): void {
-  logger.log(`Environment: ${process.env['NODE_ENV']?.toUpperCase()}`);
+function logAppEnv(logger: LoggerService, configService: ConfigService): void {
+  logger.log(
+    `Environment: ${configService.get<AppConfig>(appConfig)?.appEnvironment?.toUpperCase()}`,
+  );
 }
 
 void bootstrap();
