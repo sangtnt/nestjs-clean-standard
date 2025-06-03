@@ -41,6 +41,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "dotenv": "^16.5.0",
+    "joi": "^17.13.3",
     "kafkajs": "^2.2.4",
     "keyv": "^5.3.3",
     "nestjs-cls": "^5.4.3",

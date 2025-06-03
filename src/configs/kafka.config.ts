@@ -1,17 +1,16 @@
+import { ConfigService } from '@nestjs/config';
 import { ClientProvider, Transport } from '@nestjs/microservices';
-import 'dotenv/config';
+import { EnvSchema } from './env.config';
 
-const kafkaConfig: ClientProvider = {
+export const kafkaConfigOptions = (configService: ConfigService<EnvSchema>): ClientProvider => ({
   transport: Transport.KAFKA,
   options: {
     client: {
-      clientId: process.env.KAFKA_CLIENT_ID || 'default-client-id',
-      brokers: process.env.KAFKA_BROKERS?.split(',') || ['localhost:9092'],
+      clientId: configService.get<string>('KAFKA_CLIENT_ID'),
+      brokers: configService.get<string>('KAFKA_BROKERS')!.split(','),
     },
     consumer: {
-      groupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'default-group',
+      groupId: configService.get<string>('KAFKA_CONSUMER_GROUP_ID')!,
     },
   },
-};
-
-export default kafkaConfig;
+});

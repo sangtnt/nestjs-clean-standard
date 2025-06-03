@@ -6,7 +6,7 @@ export function getLogLevels(): Level {
   return (process.env['LOG_LEVEL'] as Level) ?? 'debug';
 }
 
-export function getLoggerOptions(): LoggerModuleOptions {
+export const loggerOptions = (): LoggerModuleOptions => {
   return {
     global: true,
     output: process.env['NODE_ENV'] === Environment.Local ? 'text' : 'json',
@@ -17,4 +17,4 @@ export function getLoggerOptions(): LoggerModuleOptions {
     level: getLogLevels(),
     logFile: process.env['LOG_FILE'],
   };
-}
+};

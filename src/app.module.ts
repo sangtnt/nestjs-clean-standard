@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PresentationModule } from './presentation/presentation.module';
 import { LoggerModule } from './shared/logger/logger.module';
-import { getLoggerOptions } from './configs/logger.config';
+import { loggerOptions } from './configs/logger.config';
 
 @Module({
-  imports: [LoggerModule.forRoot(getLoggerOptions()), PresentationModule],
+  imports: [LoggerModule.forRoot(loggerOptions()), PresentationModule],
 })
 export class AppModule {}

@@ -1,15 +1,16 @@
 import { ServerCredentials } from '@grpc/grpc-js';
 import { GrpcOptions, Transport } from '@nestjs/microservices';
-import 'dotenv/config';
 import { join } from 'path';
 import { readFile } from '@/shared/utils/file.util';
+import { ConfigService } from '@nestjs/config';
+import { EnvSchema } from './env.config';
 
-export const grpcOptions: GrpcOptions = {
+export const grpcOptions = (configService: ConfigService<EnvSchema>): GrpcOptions => ({
   transport: Transport.GRPC,
   options: {
     package: ['auth.v1', 'user.v1'],
     protoPath: ['auth/v1/auth.proto', 'user/v1/user.proto'],
-    url: `${process.env.HOST}:${process.env.GRPC_PORT}`,
+    url: `${configService.get('HOST')}:${configService.get('GRPC_PORT')}`,
     loader: {
       keepCase: false,
       includeDirs: [join(__dirname, '../..', 'src/shared/grpc/protos/auth_service')],
@@ -20,7 +21,7 @@ export const grpcOptions: GrpcOptions = {
       keepalivePermitWithoutCalls: 1,
     },
     credentials:
-      process.env.NODE_ENV !== 'local'
+      configService.get('NODE_ENV') !== 'local'
         ? ServerCredentials.createSsl(
             readFile('ssl/ca.crt'),
             [
@@ -33,4 +34,4 @@ export const grpcOptions: GrpcOptions = {
           )
         : undefined,
   },
-};
+});

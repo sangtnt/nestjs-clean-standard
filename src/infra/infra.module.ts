@@ -1,5 +1,4 @@
-import appConfig from '@/configs/app.config';
-import authDatabaseConfig, { authDatabaseConfigOptions } from '@/configs/auth-database.config';
+import { authDatabaseOptions } from '@/configs/auth-database.config';
 import { AUTH_DATA_SOURCE, KAFKA_CLIENT_SERVICE } from '@/shared/constants/constants';
 import {
   MAIL_REPOSITORY_TOKEN,
@@ -18,31 +17,34 @@ import { ClientProvider, ClientsModule } from '@nestjs/microservices';
 import { MailRepository } from './kafka/repositories/mail.repository';
 import { RefreshTokenSchema } from './postgres/auth-db/entities/refresh-token.entity';
 import { RefreshTokenRepository } from './postgres/auth-db/repositories/refresh-token.repository';
-import redisConfig from '@/configs/redis.config';
+import { redisOptions } from '@/configs/redis.config';
 import { Logger } from '@/shared/logger/services/app-logger.service';
-import kafkaConfig from '@/configs/kafka.config';
+import { kafkaConfigOptions } from '@/configs/kafka.config';
+import { EnvSchema, envValidationSchema } from '@/configs/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [appConfig, authDatabaseConfig],
       cache: true,
+      validationSchema: envValidationSchema,
     }),
     CacheModule.registerAsync({
-      useFactory: (logger: Logger) => {
-        const redisStore = redisConfig;
+      useFactory: (logger: Logger, configService: ConfigService<EnvSchema>) => {
+        const redisStore = redisOptions(configService);
         redisStore.on('error', (err) => {
           logger.error(`Redis connection error ${err}`);
         });
         return { stores: [redisStore] };
       },
-      inject: [Logger],
+      inject: [Logger, ConfigService<EnvSchema>],
     }),
     ClientsModule.registerAsync([
       {
-        useFactory: (): ClientProvider => kafkaConfig,
+        useFactory: (configService: ConfigService<EnvSchema>): ClientProvider =>
+          kafkaConfigOptions(configService),
+        inject: [ConfigService<EnvSchema>],
         name: KAFKA_CLIENT_SERVICE,
       },
     ]),
@@ -50,12 +52,12 @@ import kafkaConfig from '@/configs/kafka.config';
   providers: [
     {
       provide: AUTH_DATA_SOURCE,
-      useFactory: (configService: ConfigService): Promise<DataSource> => {
-        const dataSource = new DataSource(authDatabaseConfigOptions(configService));
+      useFactory: (configService: ConfigService<EnvSchema>): Promise<DataSource> => {
+        const dataSource = new DataSource(authDatabaseOptions(configService));
 
         return dataSource.initialize();
       },
-      inject: [ConfigService],
+      inject: [ConfigService<EnvSchema>],
     },
     {
       provide: USER_REPOSITORY_TOKEN,

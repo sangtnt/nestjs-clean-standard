@@ -1,7 +1,7 @@
+import { EnvSchema } from '@/configs/env.config';
 import { MailEntity } from '@/core/entities/mail.entity';
 import { IMailRepository } from '@/core/repositories/mail.repository';
 import { KAFKA_CLIENT_SERVICE } from '@/shared/constants/constants';
-import { EnvironmentVariables } from '@/shared/constants/env.constant';
 import { Logger } from '@/shared/logger/services/app-logger.service';
 import { Inject, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -33,15 +33,15 @@ export class MailRepository implements OnModuleInit, OnApplicationShutdown, IMai
     this.logger.log(`Sending message to Kafka topic email-verification`);
     await lastValueFrom(
       this.kafkaClient.emit(
-        this.configService.get<string>(EnvironmentVariables.KAFKA_NOTI_EMAIL_VERIFICATION_TOPIC),
+        this.configService.get<EnvSchema>('KAFKA_NOTI_EMAIL_VERIFICATION_TOPIC'),
         {
           value: {
             ...req,
             dynamicTemplateData: {
               ...req.data,
             },
-            templateId: this.configService.get<string>(
-              EnvironmentVariables.KAFKA_NOTI_EMAIL_VERIFICATION_TEMPLATE_ID,
+            templateId: this.configService.get<EnvSchema>(
+              'KAFKA_NOTI_EMAIL_VERIFICATION_TEMPLATE_ID',
             ),
           },
         },
