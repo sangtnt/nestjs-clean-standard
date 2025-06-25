@@ -9,12 +9,12 @@ import { status as RpcExceptionStatus } from '@grpc/grpc-js';
 import { FindUserUseCase } from '@/application/user/usecases/find-user.usecase';
 import { RefreshTokenExpiresMinute } from '@/shared/constants/config.constants';
 import {
-  RenewAccessTokenRequestDto,
-  RenewAccessTokenResponseDto,
-} from '../dtos/renew-access-token.dto';
+  RefreshAccessTokenRequestDto,
+  RefreshAccessTokenResponseDto,
+} from '../dtos/refresh-access-token.dto';
 
 @Injectable()
-export class RenewAccessTokenUseCase {
+export class RefreshAccessTokenUseCase {
   constructor(
     private readonly tokenService: TokenService,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
@@ -23,7 +23,7 @@ export class RenewAccessTokenUseCase {
     private findUserUseCase: FindUserUseCase,
   ) {}
 
-  async execute(request: RenewAccessTokenRequestDto): Promise<RenewAccessTokenResponseDto> {
+  async execute(request: RefreshAccessTokenRequestDto): Promise<RefreshAccessTokenResponseDto> {
     const existingToken = await this.rfTokenRepository.getTokenInfo(
       this.tokenService.hashToken(request.token),
     );

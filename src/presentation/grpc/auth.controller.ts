@@ -1,6 +1,6 @@
 import { LoginUseCase } from '@/application/auth/usecases/login.usecase';
 import { RegisterUserUseCase } from '@/application/auth/usecases/register-user.usecase';
-import { RenewAccessTokenUseCase } from '@/application/auth/usecases/renew-access-token.usecase';
+import { RefreshAccessTokenUseCase } from '@/application/auth/usecases/refresh-access-token.usecase';
 import { SendEmailVerificationUseCase } from '@/application/auth/usecases/send-email-verification.usecase';
 import { VerifyAccessTokenUseCase } from '@/application/auth/usecases/verify-access-token.usecase';
 import { Timeout } from '@/shared/decorators/time-out.decorator';
@@ -29,8 +29,8 @@ export class AuthController {
     private readonly loginUseCase: LoginUseCase,
     @Inject(VerifyAccessTokenUseCase)
     private readonly verifyAccessTokenUseCase: VerifyAccessTokenUseCase,
-    @Inject(RenewAccessTokenUseCase)
-    private readonly renewAccessTokenUseCase: RenewAccessTokenUseCase,
+    @Inject(RefreshAccessTokenUseCase)
+    private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase,
   ) {}
 
   @Timeout(10000) // 10 seconds timeout
@@ -58,6 +58,6 @@ export class AuthController {
   async refreshAccessToken(
     request: RefreshAccessTokenRequest,
   ): Promise<RefreshAccessTokenResponse> {
-    return this.renewAccessTokenUseCase.execute(request);
+    return this.refreshAccessTokenUseCase.execute(request);
   }
 }

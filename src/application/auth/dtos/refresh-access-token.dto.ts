@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class RenewAccessTokenRequestDto {
+export class RefreshAccessTokenRequestDto {
   @IsString()
   token: string;
 
@@ -8,7 +8,7 @@ export class RenewAccessTokenRequestDto {
   userId: string;
 }
 
-export class RenewAccessTokenResponseDto {
+export class RefreshAccessTokenResponseDto {
   accessToken: string;
   refreshToken: string;
 }
