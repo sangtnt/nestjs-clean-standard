@@ -4,16 +4,18 @@ import { join } from 'path';
 import { readFile } from '@/shared/utils/file.util';
 import { ConfigService } from '@nestjs/config';
 import { EnvSchema } from '@/shared/interfaces/env-schema';
+import { NGENZA_AUTH_AUTH_V1_PACKAGE_NAME } from '@ngenza-protobuf/ngenza-auth/ngenza_auth/auth/v1/auth';
+import { NGENZA_AUTH_USER_V1_PACKAGE_NAME } from '@ngenza-protobuf/ngenza-auth/ngenza_auth/user/v1/user';
 
 export const grpcOptions = (configService: ConfigService<EnvSchema>): GrpcOptions => ({
   transport: Transport.GRPC,
   options: {
-    package: ['auth.v1', 'user.v1'],
-    protoPath: ['auth/v1/auth.proto', 'user/v1/user.proto'],
+    package: [NGENZA_AUTH_AUTH_V1_PACKAGE_NAME, NGENZA_AUTH_USER_V1_PACKAGE_NAME],
+    protoPath: ['ngenza_auth/auth/v1/auth.proto', 'ngenza_auth/user/v1/user.proto'],
     url: `${configService.get('HOST')}:${configService.get('GRPC_PORT')}`,
     loader: {
       keepCase: false,
-      includeDirs: [join(__dirname, '../..', 'src/shared/grpc/protos/auth_service')],
+      includeDirs: [join(__dirname, '../..', 'node_modules/@ngenza-protobuf/ngenza-auth/proto')],
     },
     keepalive: {
       keepaliveTimeMs: 10 * 1000,
