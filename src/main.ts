@@ -13,7 +13,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { grpcOptions } from './configs/grpc.config';
 import { TimeoutInterceptor } from './shared/interceptors/time-out.interceptor';
 import { ConfigService } from '@nestjs/config';
-import { EnvSchema } from './configs/env.config';
+import { EnvSchema } from './shared/interfaces/env-schema';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

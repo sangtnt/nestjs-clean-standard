@@ -20,7 +20,8 @@ import { RefreshTokenRepository } from './postgres/auth-db/repositories/refresh-
 import { redisOptions } from '@/configs/redis.config';
 import { Logger } from '@/shared/logger/services/app-logger.service';
 import { kafkaConfigOptions } from '@/configs/kafka.config';
-import { EnvSchema, envValidationSchema } from '@/configs/env.config';
+import { envValidationSchema } from '@/configs/env.config';
+import { EnvSchema } from '@/shared/interfaces/env-schema';
 
 @Module({
   imports: [

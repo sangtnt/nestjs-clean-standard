@@ -3,7 +3,7 @@ import { GrpcOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { readFile } from '@/shared/utils/file.util';
 import { ConfigService } from '@nestjs/config';
-import { EnvSchema } from './env.config';
+import { EnvSchema } from '@/shared/interfaces/env-schema';
 
 export const grpcOptions = (configService: ConfigService<EnvSchema>): GrpcOptions => ({
   transport: Transport.GRPC,
