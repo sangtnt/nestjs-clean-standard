@@ -23,8 +23,8 @@ async function bootstrap(): Promise<void> {
   try {
     logAppEnv(logger, configService);
     configure(app, logger, configService);
-    logAppPath(logger, configService);
     await startEvent(app, configService);
+    logAppPath(logger, configService);
   } catch (error) {
     const stack = error instanceof Error ? error.stack : '';
     logger.error(`Error starting server, ${error}`, stack, 'Bootstrap');

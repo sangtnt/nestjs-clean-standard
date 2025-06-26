@@ -3,7 +3,6 @@ import { RegisterUserUseCase } from '@/application/auth/usecases/register-user.u
 import { RefreshAccessTokenUseCase } from '@/application/auth/usecases/refresh-access-token.usecase';
 import { SendEmailVerificationUseCase } from '@/application/auth/usecases/send-email-verification.usecase';
 import { VerifyAccessTokenUseCase } from '@/application/auth/usecases/verify-access-token.usecase';
-import { Timeout } from '@/shared/decorators/time-out.decorator';
 import { Inject } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
@@ -33,7 +32,6 @@ export class AuthController {
     private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase,
   ) {}
 
-  @Timeout(10000) // 10 seconds timeout
   @GrpcMethod(AUTH_SERVICE_NAME, 'sendVerificationCode')
   async sendVerificationCode(request: SendVerificationCodeRequest): Promise<void> {
     await this.sendEmailVerificationUseCase.execute(request);
