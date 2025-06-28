@@ -12,7 +12,7 @@ export class MailRepository implements OnModuleInit, OnApplicationShutdown, IMai
   constructor(
     @Inject(KAFKA_CLIENT_SERVICE) private readonly kafkaClient: ClientKafka,
     private logger: Logger,
-    @Inject(ConfigService) private readonly configService: ConfigService,
+    @Inject(ConfigService) private readonly configService: ConfigService<EnvSchema>,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -33,14 +33,14 @@ export class MailRepository implements OnModuleInit, OnApplicationShutdown, IMai
     this.logger.log(`Sending message to Kafka topic email-verification`);
     await lastValueFrom(
       this.kafkaClient.emit(
-        this.configService.get<EnvSchema>('NGENZA_KAFKA_NOTI_EMAIL_VERIFICATION_TOPIC'),
+        this.configService.get<string>('NGENZA_KAFKA_NOTI_EMAIL_VERIFICATION_TOPIC'),
         {
           value: {
             ...req,
             dynamicTemplateData: {
               ...req.data,
             },
-            templateId: this.configService.get<EnvSchema>(
+            templateId: this.configService.get<string>(
               'NGENZA_KAFKA_NOTI_EMAIL_VERIFICATION_TEMPLATE_ID',
             ),
           },
