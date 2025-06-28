@@ -4,6 +4,7 @@ import * as Joi from 'joi';
 export const envValidationSchema: Joi.ObjectSchema<EnvSchema> = Joi.object<EnvSchema>({
   NODE_ENV: Joi.string().valid('local', 'development', 'test', 'staging', 'production').required(),
   GRPC_PORT: Joi.number().port().required(),
+  APP_PORT: Joi.number().port().required(),
   HOST: Joi.string().hostname().required(),
   TIMEOUT: Joi.number().integer().min(1000).default(30000),
 

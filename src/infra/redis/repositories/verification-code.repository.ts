@@ -3,10 +3,14 @@ import { IVerificationCodeRepository } from '@/core/repositories/verification-co
 import { VerificationCodeExpiresMinute } from '@/shared/constants/config.constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { Inject } from '@nestjs/common';
+import { Inject, OnModuleDestroy } from '@nestjs/common';
 
-export class VerificationCodeRepository implements IVerificationCodeRepository {
+export class VerificationCodeRepository implements IVerificationCodeRepository, OnModuleDestroy {
   constructor(@Inject(CACHE_MANAGER) private redisServiceClient: Cache) {}
+
+  async onModuleDestroy(): Promise<void> {
+    await this.redisServiceClient.disconnect();
+  }
 
   async saveVerificationCode(entity: VerificationCodeEntity, ttl?: number): Promise<void> {
     const { id, code, attempts } = entity;

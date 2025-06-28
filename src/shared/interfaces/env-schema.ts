@@ -1,5 +1,6 @@
 export interface EnvSchema {
   // Environment variables for the application
+  APP_PORT: number;
   NODE_ENV: string;
   GRPC_PORT: string;
   HOST: string;

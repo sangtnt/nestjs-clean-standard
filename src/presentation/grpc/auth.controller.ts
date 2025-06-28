@@ -3,7 +3,7 @@ import { RegisterUserUseCase } from '@/application/auth/usecases/register-user.u
 import { RefreshAccessTokenUseCase } from '@/application/auth/usecases/refresh-access-token.usecase';
 import { SendEmailVerificationUseCase } from '@/application/auth/usecases/send-email-verification.usecase';
 import { VerifyAccessTokenUseCase } from '@/application/auth/usecases/verify-access-token.usecase';
-import { Inject } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
   SendVerificationCodeRequest,
@@ -18,6 +18,7 @@ import {
 } from '@ngenza-protobuf/ngenza-auth/ngenza_auth/auth/v1/auth';
 
 @AuthServiceControllerMethods()
+@Controller(AUTH_SERVICE_NAME)
 export class AuthController {
   constructor(
     @Inject(SendEmailVerificationUseCase)

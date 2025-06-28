@@ -24,6 +24,7 @@ async function bootstrap(): Promise<void> {
     logAppEnv(logger, configService);
     configure(app, logger, configService);
     await startEvent(app, configService);
+    await app.listen(configService.get<number>('APP_PORT')!);
     logAppPath(logger, configService);
   } catch (error) {
     const stack = error instanceof Error ? error.stack : '';
