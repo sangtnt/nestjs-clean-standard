@@ -17,6 +17,7 @@ export class MailRepository implements OnModuleInit, OnApplicationShutdown, IMai
 
   async onModuleInit(): Promise<void> {
     try {
+      this.logger.log('Connecting Kafka Producer client...');
       await this.kafkaClient.connect();
       this.logger.log('Kafka Producer client connected successfully.');
     } catch (error) {
@@ -25,6 +26,7 @@ export class MailRepository implements OnModuleInit, OnApplicationShutdown, IMai
   }
 
   async onApplicationShutdown(): Promise<void> {
+    this.logger.log('Closing Kafka Producer client...');
     await this.kafkaClient.close();
     this.logger.log('Kafka Producer client closed.');
   }

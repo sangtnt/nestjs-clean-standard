@@ -24,11 +24,13 @@ export class RefreshAccessTokenUseCase {
   ) {}
 
   async execute(request: RefreshAccessTokenRequestDto): Promise<RefreshAccessTokenResponseDto> {
+    this.logger.log('Starting refresh access token process');
+    this.logger.log(`Refreshing access token for user ID: ${request.userId}`);
     const existingToken = await this.rfTokenRepository.getTokenInfo(
       this.tokenService.hashToken(request.token),
     );
     if (!existingToken) {
-      this.logger.error(`Refresh token not found: ${request.token}`);
+      this.logger.error('Refresh token not found');
       throw new RpcException({
         error: ErrorCodes.INVALID_TOKEN,
         code: RpcExceptionStatus.INTERNAL,
@@ -36,7 +38,7 @@ export class RefreshAccessTokenUseCase {
     }
 
     if (existingToken.revokedAt || existingToken.userId !== request.userId) {
-      this.logger.error(`Refresh token revoked: ${existingToken.token}`);
+      this.logger.error(`Refresh token revoked': ${existingToken.revokedAt?.toISOString()}`);
       await this.rfTokenRepository.revokeTokenByFamily(existingToken.familyId);
       throw new RpcException({
         error: ErrorCodes.INVALID_TOKEN,
@@ -49,7 +51,7 @@ export class RefreshAccessTokenUseCase {
     await this.rfTokenRepository.save(existingToken);
 
     if (existingToken.expiresAt.getTime() < new Date().getTime()) {
-      this.logger.error(`Refresh token expired: ${existingToken.token}`);
+      this.logger.error(`Refresh token expired: ${existingToken.expiresAt?.toISOString()}`);
       throw new RpcException({
         error: ErrorCodes.TOKEN_EXPIRED,
         code: RpcExceptionStatus.UNAUTHENTICATED,
@@ -60,7 +62,7 @@ export class RefreshAccessTokenUseCase {
     const foundUser = await this.findUserUseCase.execute(existingToken.userId);
 
     if (!foundUser) {
-      this.logger.error(`User not found for refresh token: ${existingToken.token}`);
+      this.logger.error('User not found for refresh token');
       throw new RpcException({
         error: ErrorCodes.DATA_NOT_FOUND,
         code: RpcExceptionStatus.NOT_FOUND,
@@ -78,6 +80,8 @@ export class RefreshAccessTokenUseCase {
       expiresAt: new Date(Date.now() + RefreshTokenExpiresMinute),
       familyId: existingToken.familyId, // Reuse the same family ID
     });
+
+    this.logger.log('Successfully refreshed access token');
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,

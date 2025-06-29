@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { IRefreshTokenRepository } from '@/core/repositories/refresh-token.repository';
 import { RefreshTokenExpiresMinute } from '@/shared/constants/config.constants';
+import { Logger } from '@/shared/logger/services/app-logger.service';
 
 @Injectable()
 export class LoginUseCase {
@@ -18,12 +19,16 @@ export class LoginUseCase {
     private findUserUseCase: FindUserUseCase,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly rfTokenRepository: IRefreshTokenRepository,
+    private readonly logger: Logger,
   ) {}
 
   async execute(request: LoginRequestDto): Promise<LoginResponseDto> {
+    this.logger.log('Starting login process');
+    this.logger.log(`Login attempt for user: ${request.emailOrPhoneNumber}`);
     const foundUser = await this.findUserUseCase.execute(request.emailOrPhoneNumber);
 
     if (!foundUser) {
+      this.logger.error('User not found during login attempt');
       throw new RpcException({
         error: ErrorCodes.UNAUTHENTICATED,
         code: RpcExceptionStatus.UNAUTHENTICATED,
@@ -33,6 +38,7 @@ export class LoginUseCase {
     const isPasswordValid = await bcrypt.compare(request.password, foundUser.password);
 
     if (!isPasswordValid) {
+      this.logger.error('Invalid password for user');
       throw new RpcException({
         error: ErrorCodes.UNAUTHENTICATED,
         code: RpcExceptionStatus.UNAUTHENTICATED,
@@ -48,6 +54,8 @@ export class LoginUseCase {
       expiresAt: new Date(Date.now() + RefreshTokenExpiresMinute * 60 * 1000),
       familyId: uuidv7(),
     });
+
+    this.logger.log('Successfully logged in user');
 
     return {
       accessToken,

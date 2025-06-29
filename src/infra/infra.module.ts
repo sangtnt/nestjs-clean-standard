@@ -33,6 +33,7 @@ import { EnvSchema } from '@/shared/interfaces/env-schema';
     }),
     CacheModule.registerAsync({
       useFactory: (logger: Logger, configService: ConfigService<EnvSchema>) => {
+        logger.log('Initializing Redis cache store');
         const redisStore = redisOptions(configService);
         redisStore.on('error', (err) => {
           logger.error(`Redis connection error ${err}`);

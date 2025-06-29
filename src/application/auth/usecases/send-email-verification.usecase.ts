@@ -12,6 +12,7 @@ import { IUserRepository } from '@/core/repositories/user.repository';
 import { ErrorCodes } from '@/shared/constants/rp-exception.constant';
 import { status as RpcExceptionStatus } from '@grpc/grpc-js';
 import { RpcException } from '@/core/exceptions/rpc.exception';
+import { Logger } from '@/shared/logger/services/app-logger.service';
 
 @Injectable()
 export class SendEmailVerificationUseCase {
@@ -21,12 +22,15 @@ export class SendEmailVerificationUseCase {
     private readonly verificationCodeRepository: IVerificationCodeRepository,
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: IUserRepository,
+    private readonly logger: Logger,
   ) {}
 
   async execute(request: SendEmailVerificationRequestDto): Promise<void> {
+    this.logger.log(`Starting email verification process for: ${request.email}`);
     const userExist = await this.userRepository.checkExistUser(request.email);
 
     if (userExist) {
+      this.logger.error(`User already exists with email: ${request.email}`);
       throw new RpcException({
         error: ErrorCodes.DATA_EXISTS,
         code: RpcExceptionStatus.ALREADY_EXISTS,
@@ -42,6 +46,7 @@ export class SendEmailVerificationUseCase {
       },
       VerificationCodeExpiresMinute * 60 * 1000,
     );
+    this.logger.log(`Verification code generated for email: ${request.email}`);
 
     await this.mailRepository.sendEmailVerificationCode({
       to: [request.email.trim().toLowerCase()],
@@ -52,5 +57,6 @@ export class SendEmailVerificationUseCase {
         codeExpirationMinutes: VerificationCodeExpiresMinute,
       },
     });
+    this.logger.log(`Verification email sent to: ${request.email}`);
   }
 }
