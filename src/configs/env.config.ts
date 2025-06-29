@@ -7,6 +7,9 @@ export const envValidationSchema: Joi.ObjectSchema<EnvSchema> = Joi.object<EnvSc
   APP_PORT: Joi.number().port().required(),
   HOST: Joi.string().hostname().required(),
   TIMEOUT: Joi.number().integer().min(1000).default(30000),
+  LOG_LEVEL: Joi.string()
+    .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent')
+    .default('info'),
 
   NGENZA_AUTH_DB_HOST: Joi.string().hostname().required(),
   NGENZA_AUTH_DB_PORT: Joi.number().port().default(5432),

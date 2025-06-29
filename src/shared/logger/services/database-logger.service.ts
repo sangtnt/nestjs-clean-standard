@@ -13,15 +13,23 @@ class DatabaseLoggerService implements TypeOrmLogger {
   }
 
   logQueryError(error: string, query: string, parameters?: unknown[]): void {
-    this.logger.error(
-      `${query} -- Parameters: ${this.stringifyParameters(parameters)} -- ${error}`,
-    );
+    if (!this.isSilent) {
+      this.logger.error(
+        `${query} -- Parameters: ${this.stringifyParameters(parameters)} -- ${error}`,
+      );
+    } else {
+      this.logger.error(error);
+    }
   }
 
   logQuerySlow(time: number, query: string, parameters?: unknown[]): void {
-    this.logger.warn(
-      `Time: ${time} -- Parameters: ${this.stringifyParameters(parameters)} -- ${query}`,
-    );
+    if (!this.isSilent) {
+      this.logger.warn(
+        `Time: ${time} -- ${query} -- Parameters: ${this.stringifyParameters(parameters)}`,
+      );
+    } else {
+      this.logger.warn(`Query Slow Time: ${time}`);
+    }
   }
 
   logMigration(message: string): void {

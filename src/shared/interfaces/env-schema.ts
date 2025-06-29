@@ -5,6 +5,7 @@ export interface EnvSchema {
   GRPC_PORT: string;
   HOST: string;
   TIMEOUT: number;
+  LOG_LEVEL: string;
 
   // Database configuration for auth service
   NGENZA_AUTH_DB_HOST: string;

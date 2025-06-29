@@ -3,7 +3,7 @@ import { LoggerModuleOptions } from '@/shared/logger/model/logger.option';
 import { Level } from '@/shared/logger/utils/level';
 
 export function getLogLevels(): Level {
-  return (process.env['LOG_LEVEL'] as Level) ?? 'debug';
+  return (process.env['LOG_LEVEL'] as Level) ?? 'info';
 }
 
 export const loggerOptions = (): LoggerModuleOptions => {
